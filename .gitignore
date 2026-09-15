@@ -1,3 +1,11 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+.env.local
+
 # System Files
 .DS_Store
 Thumbs.db

@@ -3,20 +3,20 @@ let problems = [];
 let activeTab = 'home';
 let currentBlueprintId = null;
 
-// Mock database defaults to populate the platform with realistic samples
+// Fallback problems for offline resilience
 const DEFAULT_PROBLEMS = [
   {
     id: "mock-1",
     client_name: "Sarah Jenkins",
     client_email: "sarah@sweetdelights.com",
-    raw_title: " WhatsApp Bakery Orders",
+    raw_title: "WhatsApp Bakery Orders",
     raw_description: "I run a custom cake shop. Customers send me order details, reference pictures, and text requests on WhatsApp. I manually write them down on sticky notes and draw order calendar entries on a whiteboard. I constantly lose notes or misread handwriting, causing custom text spelling mistakes on cakes, and late deliveries.",
     status: "Solved",
     developer_name: "Leo Vance",
     developer_github: "leodev",
     solution_url: "https://sweetorders-bakery.vercel.app",
     is_unlocked: false,
-    created_at: "July 08, 2026",
+    createdAt: new Date().toISOString(),
     blueprint: {
       formal_title: "SaaS Order Calendar & Recipe Tracker",
       target_persona: "Boutique Bakery Owners & Custom Cake Designers",
@@ -50,7 +50,7 @@ const DEFAULT_PROBLEMS = [
     developer_github: "elenarost",
     solution_url: null,
     is_unlocked: false,
-    created_at: "July 09, 2026",
+    createdAt: new Date().toISOString(),
     blueprint: {
       formal_title: "Micro-SaaS Billable Hours Tracker",
       target_persona: "Construction Foremen & Crew Subcontractors",
@@ -58,13 +58,12 @@ const DEFAULT_PROBLEMS = [
       core_features: [
         "One-Tap Clock-in/Clock-out: GPS-stamped start and end times for renovation jobs.",
         "Real-Time Coordinator Board: Dashboard for foreman to view live crew logins.",
-        "Excel/CSV Monthly Export: Automatic calculations and report generation."
+        "Dispute-Free PDF Invoicing: Export timesheets signed digitally at end of shift."
       ],
       roadmap: [
-        "Phase 1: Configure Firebase backend and Firestore tables.",
-        "Phase 2: Construct responsive subcontractor clock-in UI with Geolocation API.",
-        "Phase 3: Build supervisor audit interface to edit or approve hours.",
-        "Phase 4: Setup CSV parsing engines for exports."
+        "Phase 1: Build mobile-friendly shift punch cards.",
+        "Phase 2: Implement contractor role-based authentication.",
+        "Phase 3: Connect PDF export engine for payroll approval."
       ],
       duplicate_check: {
         is_duplicate: false,
@@ -75,29 +74,29 @@ const DEFAULT_PROBLEMS = [
   },
   {
     id: "mock-3",
-    client_name: "Diana Prince",
-    client_email: "diana@antiquities.org",
-    raw_title: "Ancient artifacts library inventory tagging",
-    raw_description: "We catalog historical artifacts. The museum staff write tag details on cards. When tags fall off, we don't know where the artifact belongs, or what box it corresponds to. We need a simple barcode/QR inventory checklist system to instantly check box contents using a phone camera.",
+    client_name: "Dr. Amanda Zhao",
+    client_email: "amanda@veterinarycare.org",
+    raw_title: "Manual Patient Appointment Reminders & Pet Med Schedules",
+    raw_description: "Our veterinary clinic staff spends 3 hours every morning calling pet owners to confirm appointments and remind them about post-surgery medication schedules. Patients frequently forget medicine timings, and no-shows waste our surgeon's time.",
     status: "Open",
     developer_name: null,
     developer_github: null,
     solution_url: null,
     is_unlocked: false,
-    created_at: "July 10, 2026",
+    createdAt: new Date().toISOString(),
     blueprint: {
-      formal_title: "Real-time Stock Alert & Inventory Planner",
-      target_persona: "Museum Curators & Archive Registrars",
-      tech_stack: ["HTML5 QR Scanner", "Vanilla JS", "PocketBase Database"],
+      formal_title: "Automated Pet Care & SMS Appointment Cadence Engine",
+      target_persona: "Veterinary Clinics, Animal Hospitals & Pet Parents",
+      tech_stack: ["Next.js", "Node.js", "Twilio API", "MongoDB Atlas"],
       core_features: [
-        "Camera QR scanner widget: Mobile web camera QR scanning without app installs.",
-        "Box Database: Searchable catalog representing box-to-artifact relationships.",
-        "Missing Tag Recovery Tool: Visual list of unidentified items with pictures to re-match."
+        "Two-Way SMS Confirmations: Automated text alerts that update calendar on reply.",
+        "Medication Regimen Portal: Timed reminders sent to pet parents with dosage instructions.",
+        "No-Show Predictive Scoring: Flags high-risk appointment slots for staff follow-up."
       ],
       roadmap: [
-        "Phase 1: Setup HTML5 QR reading library components.",
-        "Phase 2: Construct inventory database matching boxes to items.",
-        "Phase 3: Design mobile-responsive UI suited for tablet/handheld browser use."
+        "Phase 1: Build schedule calendar sync module.",
+        "Phase 2: Integrate Twilio Programmable Messaging webhooks.",
+        "Phase 3: Create prescription reminder timeline widget."
       ],
       duplicate_check: {
         is_duplicate: false,
@@ -108,143 +107,147 @@ const DEFAULT_PROBLEMS = [
   }
 ];
 
-/* ================= SIMULATED AI CONFIGS ================= */
-const AI_BLUEPRINTS = {
-  invoice: {
-    title: "AI-Powered Invoice Tracker & OCR Parser",
-    persona: "Freelancers, Contractors & Boutique Agencies",
-    stack: ["React.js", "Tesseract.js (OCR)", "Node.js Express", "SQLite"],
-    features: [
-      "Mobile Receipt Snap: Upload receipt photos directly from mobile devices.",
-      "OCR Content Parsing: Instantly read total sums, tax entries, and vendor names using on-device OCR.",
-      "Categorized Expense Logs: Automatic tagging into Tax Deductible buckets.",
-      "Quick Export: Excel / PDF report compiler for tax filing seasons."
-    ],
-    roadmap: [
-      "Phase 1: Implement canvas upload flow with Tesseract.js image-to-text parsers.",
-      "Phase 2: Write regex filters to isolate currency metrics and vendor identifiers.",
-      "Phase 3: Construct local expense ledger databases.",
-      "Phase 4: Design PDF summary generators."
-    ]
+/* ================= API CLIENT SERVICE ================= */
+const API = {
+  async getStats() {
+    try {
+      const res = await fetch('/api/stats');
+      if (!res.ok) throw new Error('API Stats Error');
+      return await res.json();
+    } catch (err) {
+      // Fallback calculation on client
+      const total = problems.length;
+      const solved = problems.filter(p => p.status === 'Solved').length;
+      const inProgress = problems.filter(p => p.status === 'In Progress').length;
+      const open = problems.filter(p => p.status === 'Open').length;
+      return {
+        total_problems: total,
+        solved_problems: solved,
+        in_progress: inProgress,
+        open_problems: open,
+        total_mrr: solved * 49
+      };
+    }
   },
-  cake: {
-    title: "SaaS Order Calendar & Recipe Tracker",
-    persona: "Small-batch Bakers & Custom Confectioners",
-    stack: ["Next.js", "Tailwind CSS", "Supabase", "Resend (Email APIs)"],
-    features: [
-      "Visual Order Builder: Form specifying size, shapes, flavors, toppings, and photo references.",
-      "Client Dashboard: Portal for clients to track baking progress (Staged: Received, Mixing, Baked, Decorating).",
-      "Interactive Delivery Calendar: Block out date slots once daily capacity is reached.",
-      "Automated Email Alerts: Confirm receipt details to reduce misspellings."
-    ],
-    roadmap: [
-      "Phase 1: Construct the multi-step order booking funnel with reference uploads.",
-      "Phase 2: Integrate calendar capacity blocking parameters.",
-      "Phase 3: Configure Resend trigger templates for receipt verification.",
-      "Phase 4: Setup real-time order state indicators."
-    ]
+
+  async getProblems(filterStatus = 'all', searchQuery = '') {
+    try {
+      let url = '/api/problems?';
+      if (filterStatus && filterStatus !== 'all') {
+        const statusMap = { 'open': 'Open', 'progress': 'In Progress', 'solved': 'Solved' };
+        url += `status=${encodeURIComponent(statusMap[filterStatus] || filterStatus)}&`;
+      }
+      if (searchQuery) {
+        url += `search=${encodeURIComponent(searchQuery)}&`;
+      }
+
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('API Problems Error');
+      return await res.json();
+    } catch (err) {
+      console.warn('API unavailable, using local memory state:', err.message);
+      return problems;
+    }
   },
-  client: {
-    title: "Sleek Micro-CRM for Independent Contractors",
-    persona: "Independent Plumbers, Electricians, Painters & Cleaners",
-    stack: ["HTML5", "Vanilla CSS & JS", "SQLite (Backend)", "Chart.js"],
-    features: [
-      "Contact Cards: Store client address, phone logs, and historical jobs details.",
-      "In-field Quotes Creator: Estimate costs, select standard labor fees, and email direct estimates on the spot.",
-      "Job Cards Dashboard: Track active jobs, invoice values, and pending follow-ups.",
-      "Simple Analytics: Visual reports of weekly revenue streams."
-    ],
-    roadmap: [
-      "Phase 1: Setup relational database mapping clients, jobs, and invoices.",
-      "Phase 2: Assemble estimate sheet builder with local draft saving capabilities.",
-      "Phase 3: Write client mailing modules for fast quoting.",
-      "Phase 4: Render revenue graphs via Chart.js integration."
-    ]
+
+  async createProblem(data) {
+    try {
+      const res = await fetch('/api/problems', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error('Failed to create problem on server');
+      return await res.json();
+    } catch (err) {
+      console.warn('Falling back to local creation:', err.message);
+      const fallbackProblem = {
+        id: `local-${Date.now()}`,
+        ...data,
+        status: 'Open',
+        developer_name: null,
+        developer_github: null,
+        solution_url: null,
+        is_unlocked: false,
+        createdAt: new Date().toISOString(),
+        blueprint: {
+          formal_title: "Automated Workflow Manager & SaaS Architecture",
+          target_persona: "Digital Operations & Small Businesses",
+          tech_stack: ["Next.js", "Express.js", "MongoDB Atlas"],
+          core_features: ["Workflow Pipelines", "Automated Logs", "Team Reminders"],
+          roadmap: ["Phase 1: Setup API", "Phase 2: Database Models"],
+          duplicate_check: { is_duplicate: false, similar_problem_id: null, similarity_reason: "" }
+        }
+      };
+      return fallbackProblem;
+    }
   },
-  inventory: {
-    title: "Real-time Stock Alert & Inventory Planner",
-    persona: "Small Warehouses & Retail Shop Managers",
-    stack: ["Vite + React", "Express.js", "MongoDB", "Twilio (SMS Alerts)"],
-    features: [
-      "Bar/QR Code Scanner: Fast scanner using integrated webcams.",
-      "Minimum Level Warnings: Configure alerts when items hit reorder numbers.",
-      "Supplier Order Planners: Auto-generate order request drafts.",
-      "Reconciliation logs: Audit trail to track who added or subtracted stock."
-    ],
-    roadmap: [
-      "Phase 1: Implement client side camera scanner integrations.",
-      "Phase 2: Build MongoDB collections for items, stocks, and logs.",
-      "Phase 3: Integrate SMS alert triggers using Twilio endpoints.",
-      "Phase 4: Build restocking proposal modules."
-    ]
+
+  async claimProblem(id, devData) {
+    try {
+      const res = await fetch(`/api/problems/${id}/claim`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(devData)
+      });
+      if (!res.ok) throw new Error('Failed to claim problem on server');
+      return await res.json();
+    } catch (err) {
+      console.warn('Fallback local claim:', err.message);
+      const prob = problems.find(p => p.id === id);
+      if (prob) {
+        prob.status = 'In Progress';
+        prob.developer_name = devData.developer_name;
+        prob.developer_github = devData.developer_github;
+      }
+      return prob;
+    }
   },
-  schedule: {
-    title: "Frictionless Appointment Scheduler for Creators",
-    persona: "Online Tutors, Consultants, Coachings & Creatives",
-    stack: ["SvelteKit", "Node.js", "PostgreSQL", "Google Calendar API"],
-    features: [
-      "Public Booking Board: Shareable link listing slots open to client selection.",
-      "Google Calendar sync: Live check of existing event blocks to avoid overlaps.",
-      "Meeting Link integration: Automatically create Google Meet/Zoom channels.",
-      "SMS Reminders: Twilio scheduling to prompt users 1 hour before slots."
-    ],
-    roadmap: [
-      "Phase 1: Authenticate Google OAuth and map calendar sync parameters.",
-      "Phase 2: Build public calendar slotting widgets.",
-      "Phase 3: Integrate API connections to Zoom/Meet links.",
-      "Phase 4: Construct reminder Cron workflows."
-    ]
+
+  async solveProblem(id, solveData) {
+    try {
+      const res = await fetch(`/api/problems/${id}/solve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(solveData)
+      });
+      if (!res.ok) throw new Error('Failed to submit solution on server');
+      return await res.json();
+    } catch (err) {
+      console.warn('Fallback local solve:', err.message);
+      const prob = problems.find(p => p.id === id);
+      if (prob) {
+        prob.status = 'Solved';
+        prob.solution_url = solveData.solution_url;
+      }
+      return prob;
+    }
   },
-  time: {
-    title: "Micro-SaaS Billable Hours Tracker",
-    persona: "Freelance Developers, Designers & Writers",
-    stack: ["React.js", "Express", "MongoDB", "PDFKit (Invoicing)"],
-    features: [
-      "Floating Timer Widget: Easily play/pause clock from a floating toolbar.",
-      "Project Breakdown logs: Associate hours with specific projects or tasks.",
-      "Instant Invoice Compiler: Turn logged hours into professional invoices with one click.",
-      "Idle Time alerts: Browser triggers if timer runs but no keyboard/mouse hits occur."
-    ],
-    roadmap: [
-      "Phase 1: Setup React local clock state and local cache syncs.",
-      "Phase 2: Develop task selector widgets and database integrations.",
-      "Phase 3: Construct billing invoice generation modules.",
-      "Phase 4: Write idle tracking scripts using window event loops."
-    ]
-  },
-  default: {
-    title: "Automated Workflow Manager & Domain Tracker",
-    persona: "Small Business Operators & Digital Teams",
-    stack: ["Vite + React", "Supabase Database & Storage", "Vanilla CSS"],
-    features: [
-      "Custom Workflow Boards: Drag-and-drop boards to maps project pipelines.",
-      "Database Tables: Flexible grid entries to track invoices, items, or records.",
-      "System Activity Logs: Records changes made to documents.",
-      "Notifications Centre: Alert teammates when records change states."
-    ],
-    roadmap: [
-      "Phase 1: Assemble layout cards with drag-and-drop mechanics.",
-      "Phase 2: Write flexible column model databases.",
-      "Phase 3: Implement internal notification dispatchers."
-    ]
+
+  async unlockProblem(id, unlockData) {
+    try {
+      const res = await fetch(`/api/problems/${id}/unlock`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(unlockData)
+      });
+      if (!res.ok) throw new Error('Failed to unlock problem on server');
+      return await res.json();
+    } catch (err) {
+      console.warn('Fallback local unlock:', err.message);
+      const prob = problems.find(p => p.id === id);
+      if (prob) {
+        prob.is_unlocked = true;
+      }
+      return prob;
+    }
   }
 };
 
 /* ================= INITIALIZATION ================= */
-document.addEventListener('DOMContentLoaded', () => {
-  // Load from local storage, fallback to defaults if empty
-  const stored = localStorage.getItem('btf_problems');
-  if (stored) {
-    problems = JSON.parse(stored);
-  } else {
-    problems = [...DEFAULT_PROBLEMS];
-    localStorage.setItem('btf_problems', JSON.stringify(problems));
-  }
-
-  // Initial render
-  updateStatistics();
-  renderClientFeed();
-  renderDeveloperFeed();
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load initial problems and stats from MongoDB / API
+  await loadProblemsAndStats();
 
   // Setup DOM Event Listeners
   setupNavigation();
@@ -253,6 +256,24 @@ document.addEventListener('DOMContentLoaded', () => {
   setupModals();
   setupCardFormatting();
 });
+
+async function loadProblemsAndStats() {
+  try {
+    const fetched = await API.getProblems();
+    if (fetched && fetched.length > 0) {
+      problems = fetched;
+    } else {
+      const stored = localStorage.getItem('btf_problems');
+      problems = stored ? JSON.parse(stored) : [...DEFAULT_PROBLEMS];
+    }
+  } catch (err) {
+    problems = [...DEFAULT_PROBLEMS];
+  }
+
+  await updateStatistics();
+  renderClientFeed();
+  renderDeveloperFeed();
+}
 
 /* ================= ROUTING & NAVIGATION ================= */
 function setupNavigation() {
@@ -281,7 +302,7 @@ function setupNavigation() {
         t.section.classList.remove('active');
       }
     });
-    // Scroll to top of window
+    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -293,7 +314,7 @@ function setupNavigation() {
   ctaDev.addEventListener('click', () => switchTab('dev'));
   logo.addEventListener('click', () => switchTab('home'));
 
-  // Register empty state action trigger
+  // Empty state CTA trigger
   document.addEventListener('click', (e) => {
     if (e.target && e.target.classList.contains('btn-action-post-now')) {
       document.getElementById('modal-post-problem').classList.add('show');
@@ -302,24 +323,17 @@ function setupNavigation() {
 }
 
 /* ================= GLOBAL STATISTICS COMPILER ================= */
-function updateStatistics() {
-  const openCount = problems.filter(p => p.status === 'Open').length;
-  const progressCount = problems.filter(p => p.status === 'In Progress').length;
-  const solvedCount = problems.filter(p => p.status === 'Solved').length;
+async function updateStatistics() {
+  const stats = await API.getStats();
 
-  // Calculate MRR (15$ per active unlocked solution)
-  // Let's count unlocked mock items plus any unlocked user submissions
-  const unlockedCount = problems.filter(p => p.status === 'Solved' && p.is_unlocked).length;
-  const mrrVal = unlockedCount * 15;
-  const annualARR = mrrVal * 12;
-
-  document.getElementById('stat-open').textContent = openCount;
-  document.getElementById('stat-progress').textContent = progressCount;
-  document.getElementById('stat-solved').textContent = solvedCount;
-  document.getElementById('stat-mrr').textContent = `$${mrrVal.toLocaleString()} /mo`;
+  document.getElementById('stat-open').textContent = stats.open_problems ?? 0;
+  document.getElementById('stat-progress').textContent = stats.in_progress ?? 0;
+  document.getElementById('stat-solved').textContent = stats.solved_problems ?? 0;
+  document.getElementById('stat-mrr').textContent = `$${(stats.total_mrr ?? 0).toLocaleString()} /mo`;
 
   // Update developer workspace active claimed counter
-  document.getElementById('dev-claimed-count').textContent = progressCount + solvedCount;
+  const claimedCount = (stats.in_progress ?? 0) + (stats.solved_problems ?? 0);
+  document.getElementById('dev-claimed-count').textContent = claimedCount;
 }
 
 /* ================= INGESTION & FORM SUBMISSION ================= */
@@ -342,54 +356,46 @@ function setupFormHandlers() {
     form.reset();
 
     // Begin Loading Step Simulation
-    simulateAILoaderSteps(rawTitle, rawDesc, (aiResult) => {
-      // Create new problem record
-      const newProblem = {
-        id: `prob-${Date.now()}`,
+    simulateAILoaderSteps(rawTitle, rawDesc, async () => {
+      // Post problem to server MongoDB API
+      const saved = await API.createProblem({
         client_name: clientName,
         client_email: clientEmail,
         raw_title: rawTitle,
-        raw_description: rawDesc,
-        status: "Open",
-        developer_name: null,
-        developer_github: null,
-        solution_url: null,
-        is_unlocked: false,
-        created_at: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        blueprint: aiResult
-      };
+        raw_description: rawDesc
+      });
 
-      // Add to array, save to localStorage
-      problems.unshift(newProblem);
+      // Insert at beginning of local array
+      problems.unshift(saved);
       localStorage.setItem('btf_problems', JSON.stringify(problems));
 
       // Close loader
       modalLoading.classList.remove('show');
 
-      // Refresh listings
-      updateStatistics();
+      // Refresh listings & stats from server
+      await updateStatistics();
       renderClientFeed();
       renderDeveloperFeed();
 
       // Open details view modal of new problem instantly
-      openBlueprintModal(newProblem.id);
+      openBlueprintModal(saved.id || saved._id);
     });
   });
 }
 
 /* ================= SIMULATE AI BLUEPRINT PROCESSOR ================= */
 function simulateAILoaderSteps(title, desc, onComplete) {
-  const step1 = document.getElementById('shimmer-step-1');
-  const step2 = document.getElementById('shimmer-step-2');
-  const step3 = document.getElementById('shimmer-step-3');
-  const step4 = document.getElementById('shimmer-step-4');
+  const step1 = document.getElementById('ai-step-1');
+  const step2 = document.getElementById('ai-step-2');
+  const step3 = document.getElementById('ai-step-3');
+  const step4 = document.getElementById('ai-step-4');
 
-  // Reset statuses
-  const steps = [step1, step2, step3, step4];
-  steps.forEach(s => {
+  // Reset states
+  [step1, step2, step3, step4].forEach(s => {
     s.classList.remove('active', 'completed');
   });
 
+  // Step 1: Parsing
   step1.classList.add('active');
 
   setTimeout(() => {
@@ -410,77 +416,23 @@ function simulateAILoaderSteps(title, desc, onComplete) {
         setTimeout(() => {
           step4.classList.remove('active');
           step4.classList.add('completed');
-
-          // Process description to generate specifications
-          const blueprint = runClientAISimulator(title, desc);
-          onComplete(blueprint);
+          onComplete();
         }, 800);
       }, 800);
-    }, 1000); // Spend longer checking duplicates for authenticity
+    }, 1000);
   }, 800);
 }
 
-// Client Side Mock AI Generator
-function runClientAISimulator(title, desc) {
-  const cleanTitle = title.toLowerCase() + " " + desc.toLowerCase();
-  let categoryKey = 'default';
-
-  if (cleanTitle.match(/(invoice|receipt|billing|expense|ocr|tax)/)) {
-    categoryKey = 'invoice';
-  } else if (cleanTitle.match(/(cake|bakery|bake|food|cookie|restaurant)/)) {
-    categoryKey = 'cake';
-  } else if (cleanTitle.match(/(client|customer|lead|crm|contact|agent)/)) {
-    categoryKey = 'client';
-  } else if (cleanTitle.match(/(inventory|stock|warehouse|product|box|scan)/)) {
-    categoryKey = 'inventory';
-  } else if (cleanTitle.match(/(schedule|appoint|calendar|meet|booking|time slot)/)) {
-    categoryKey = 'schedule';
-  } else if (cleanTitle.match(/(time|clock|tracker|hour|billable)/)) {
-    categoryKey = 'time';
+/* ================= HELPER: FORMAT DATES ================= */
+function formatDate(dateValue) {
+  if (!dateValue) return 'Recently';
+  try {
+    const d = new Date(dateValue);
+    if (isNaN(d.getTime())) return dateValue;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return 'Recently';
   }
-
-  const modelTemplate = AI_BLUEPRINTS[categoryKey];
-
-  // Semantic Duplicate Check:
-  // Scans existing problems in DB for shared keyword category or title similarity
-  let isDuplicate = false;
-  let similarProblemId = null;
-  let similarityReason = "";
-
-  for (let prob of problems) {
-    const existingClean = prob.raw_title.toLowerCase() + " " + prob.raw_description.toLowerCase();
-    
-    // Check keyword alignment
-    let matchesCategory = false;
-    if (categoryKey !== 'default') {
-      if (categoryKey === 'invoice' && existingClean.match(/(invoice|receipt|billing|expense)/)) matchesCategory = true;
-      if (categoryKey === 'cake' && existingClean.match(/(cake|bakery|bake|food)/)) matchesCategory = true;
-      if (categoryKey === 'client' && existingClean.match(/(client|customer|lead|crm)/)) matchesCategory = true;
-      if (categoryKey === 'inventory' && existingClean.match(/(inventory|stock|warehouse|product|box)/)) matchesCategory = true;
-      if (categoryKey === 'schedule' && existingClean.match(/(schedule|appoint|calendar|meet|booking)/)) matchesCategory = true;
-      if (categoryKey === 'time' && existingClean.match(/(time|clock|tracker|hour)/)) matchesCategory = true;
-    }
-
-    if (matchesCategory) {
-      isDuplicate = true;
-      similarProblemId = prob.id;
-      similarityReason = `This problem overlaps with '${prob.blueprint.formal_title}' (submitted by ${prob.client_name}). Both describe operational gaps inside managing ${categoryKey === 'cake' ? 'baking and cake schedules' : categoryKey + ' tracking workflows'}.`;
-      break;
-    }
-  }
-
-  return {
-    formal_title: modelTemplate.title,
-    target_persona: modelTemplate.persona,
-    tech_stack: [...modelTemplate.stack],
-    core_features: [...modelTemplate.features],
-    roadmap: [...modelTemplate.roadmap],
-    duplicate_check: {
-      is_duplicate: isDuplicate,
-      similar_problem_id: similarProblemId,
-      similarity_reason: similarityReason
-    }
-  };
 }
 
 /* ================= RENDER FEEDS ================= */
@@ -488,9 +440,6 @@ function runClientAISimulator(title, desc) {
 // 1. Client Feed Listing
 function renderClientFeed() {
   const container = document.getElementById('client-problems-list');
-  const userEmail = "john@example.com"; // Simulation mock email filter
-
-  // Clear list
   container.innerHTML = "";
 
   if (problems.length === 0) {
@@ -506,23 +455,26 @@ function renderClientFeed() {
   }
 
   problems.forEach(prob => {
+    const probId = prob.id || prob._id;
     const card = document.createElement('div');
     card.className = "problem-card glass-panel";
-    card.setAttribute('data-id', prob.id);
+    card.setAttribute('data-id', probId);
 
-    // Duplicate ribbon alert
-    const duplicateRibbon = prob.blueprint.duplicate_check.is_duplicate 
+    const isDuplicate = prob.blueprint?.duplicate_check?.is_duplicate;
+    const duplicateRibbon = isDuplicate 
       ? `<span class="duplicate-banner-ribbon">Duplicate Match</span>` 
       : '';
+
+    const formattedDate = formatDate(prob.createdAt || prob.created_at);
 
     card.innerHTML = `
       ${duplicateRibbon}
       <div>
         <div class="card-header-row">
           <span class="status-badge ${prob.status.toLowerCase().replace(' ', '-')}">${prob.status}</span>
-          <span class="card-meta">${prob.created_at}</span>
+          <span class="card-meta">${formattedDate}</span>
         </div>
-        <h4 class="card-title">${prob.blueprint.formal_title}</h4>
+        <h4 class="card-title">${prob.blueprint?.formal_title || prob.raw_title}</h4>
         <p class="card-description">${prob.raw_description}</p>
       </div>
       
@@ -535,7 +487,7 @@ function renderClientFeed() {
       </div>
     `;
 
-    card.addEventListener('click', () => openBlueprintModal(prob.id));
+    card.addEventListener('click', () => openBlueprintModal(probId));
     container.appendChild(card);
   });
 }
@@ -547,19 +499,17 @@ function renderDeveloperFeed(filterStatus = 'all', searchQuery = '') {
 
   let filtered = [...problems];
 
-  // Apply search query
   if (searchQuery.trim() !== "") {
     const q = searchQuery.toLowerCase();
     filtered = filtered.filter(p => {
-      const matchStack = p.blueprint.tech_stack.some(s => s.toLowerCase().includes(q));
-      const matchPersona = p.blueprint.target_persona.toLowerCase().includes(q);
-      const matchTitle = p.blueprint.formal_title.toLowerCase().includes(q);
+      const matchStack = p.blueprint?.tech_stack?.some(s => s.toLowerCase().includes(q));
+      const matchPersona = p.blueprint?.target_persona?.toLowerCase().includes(q);
+      const matchTitle = p.blueprint?.formal_title?.toLowerCase().includes(q);
       const matchDesc = p.raw_description.toLowerCase().includes(q);
       return matchStack || matchPersona || matchTitle || matchDesc;
     });
   }
 
-  // Apply tab state status filters
   if (filterStatus !== 'all') {
     const statusMap = {
       'open': 'Open',
@@ -581,20 +531,22 @@ function renderDeveloperFeed(filterStatus = 'all', searchQuery = '') {
   }
 
   filtered.forEach(prob => {
+    const probId = prob.id || prob._id;
     const card = document.createElement('div');
     card.className = "problem-card glass-panel";
-    card.setAttribute('data-id', prob.id);
+    card.setAttribute('data-id', probId);
 
-    // Build stack tags string
-    const tagsHtml = prob.blueprint.tech_stack.map(t => `<span class="tech-tag-sm">${t}</span>`).join('');
+    const tags = prob.blueprint?.tech_stack || [];
+    const tagsHtml = tags.map(t => `<span class="tech-tag-sm">${t}</span>`).join('');
+    const formattedDate = formatDate(prob.createdAt || prob.created_at);
 
     card.innerHTML = `
       <div>
         <div class="card-header-row">
           <span class="status-badge ${prob.status.toLowerCase().replace(' ', '-')}">${prob.status}</span>
-          <span class="card-meta">${prob.created_at}</span>
+          <span class="card-meta">${formattedDate}</span>
         </div>
-        <h4 class="card-title">${prob.blueprint.formal_title}</h4>
+        <h4 class="card-title">${prob.blueprint?.formal_title || prob.raw_title}</h4>
         <p class="card-description">${prob.raw_description}</p>
         
         <div class="card-tech-cloud">
@@ -603,7 +555,7 @@ function renderDeveloperFeed(filterStatus = 'all', searchQuery = '') {
       </div>
       
       <div class="card-footer-row">
-        <span class="card-meta">Persona: ${prob.blueprint.target_persona}</span>
+        <span class="card-meta">Persona: ${prob.blueprint?.target_persona || 'Small Businesses'}</span>
         <span class="card-action-hint">
           <span>Explore Spec</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -611,7 +563,7 @@ function renderDeveloperFeed(filterStatus = 'all', searchQuery = '') {
       </div>
     `;
 
-    card.addEventListener('click', () => openBlueprintModal(prob.id));
+    card.addEventListener('click', () => openBlueprintModal(probId));
     container.appendChild(card);
   });
 }
@@ -639,7 +591,7 @@ function setupCardInteractions() {
 /* ================= DETAIL VIEW & BLUEPRINT MODAL ================= */
 function openBlueprintModal(id) {
   currentBlueprintId = id;
-  const prob = problems.find(p => p.id === id);
+  const prob = problems.find(p => (p.id === id || p._id === id));
   if (!prob) return;
 
   const modal = document.getElementById('modal-blueprint-details');
@@ -664,22 +616,25 @@ function openBlueprintModal(id) {
   // Setup basics
   statusBadge.className = `status-badge ${prob.status.toLowerCase().replace(' ', '-')}`;
   statusBadge.textContent = prob.status;
-  title.textContent = prob.blueprint.formal_title;
+  title.textContent = prob.blueprint?.formal_title || prob.raw_title;
   rawDesc.textContent = prob.raw_description;
-  persona.textContent = prob.blueprint.target_persona;
+  persona.textContent = prob.blueprint?.target_persona || 'Small Business Operators';
   clientName.textContent = prob.client_name;
 
   // Render Features list
-  featuresList.innerHTML = prob.blueprint.core_features.map(f => `<li>${f}</li>`).join('');
+  const features = prob.blueprint?.core_features || [];
+  featuresList.innerHTML = features.map(f => `<li>${f}</li>`).join('');
   
   // Render Roadmap list
-  roadmapList.innerHTML = prob.blueprint.roadmap.map(r => `<li>${r}</li>`).join('');
+  const roadmap = prob.blueprint?.roadmap || [];
+  roadmapList.innerHTML = roadmap.map(r => `<li>${r}</li>`).join('');
 
   // Render Tech Tags
-  techTags.innerHTML = prob.blueprint.tech_stack.map(t => `<span class="tech-tag">${t}</span>`).join('');
+  const stack = prob.blueprint?.tech_stack || [];
+  techTags.innerHTML = stack.map(t => `<span class="tech-tag">${t}</span>`).join('');
 
   // Setup Duplicate Warnings
-  if (prob.blueprint.duplicate_check.is_duplicate) {
+  if (prob.blueprint?.duplicate_check?.is_duplicate) {
     duplicateAlert.classList.remove('hide');
     duplicateReason.textContent = prob.blueprint.duplicate_check.similarity_reason;
   } else {
@@ -696,12 +651,11 @@ function openBlueprintModal(id) {
     devInfoSection.classList.add('hide');
   }
 
-  // Setup dynamic footer action controls and paywall overlays based on roles
+  // Dynamic footer action controls and paywall
   gateContainer.classList.add('hide');
   gateContainer.innerHTML = "";
   footer.innerHTML = "";
 
-  // View Routing: is the user checking via Client Hub tab vs Developer tab?
   if (activeTab === 'client') {
     // CLIENT VIEW
     if (prob.status === 'Open') {
@@ -709,10 +663,8 @@ function openBlueprintModal(id) {
     } else if (prob.status === 'In Progress') {
       footer.innerHTML = `<span class="card-meta">🛠️ Project claimed by <strong>${prob.developer_name}</strong> and currently in progress...</span><button class="btn btn-secondary" onclick="closeModal('modal-blueprint-details')">Close</button>`;
     } else if (prob.status === 'Solved') {
-      // SOLVED LINK STATE: Locked or Unlocked?
       gateContainer.classList.remove('hide');
       if (prob.is_unlocked) {
-        // Solution revealed
         gateContainer.innerHTML = `
           <div class="gate-revealed-link-box">
             <div class="gate-revealed-title">🎉 Solution Unlocked & Ready</div>
@@ -725,7 +677,6 @@ function openBlueprintModal(id) {
         `;
         footer.innerHTML = `<button class="btn btn-secondary" onclick="closeModal('modal-blueprint-details')">Close</button>`;
       } else {
-        // Gated: Show Paywall Banner
         gateContainer.innerHTML = `
           <div class="gate-title">🔒 Solution Built & Gated</div>
           <p class="gate-desc">Developer <strong>${prob.developer_name}</strong> has launched a custom solution! Unlock full lifetime subscription access to the host app for a small monthly SaaS fee.</p>
@@ -735,7 +686,6 @@ function openBlueprintModal(id) {
         `;
         footer.innerHTML = `<button class="btn btn-secondary" onclick="closeModal('modal-blueprint-details')">Close</button>`;
         
-        // Connect paywall trigger
         document.getElementById('btn-trigger-checkout').addEventListener('click', () => {
           closeModal('modal-blueprint-details');
           openCheckoutModal(prob);
@@ -754,7 +704,6 @@ function openBlueprintModal(id) {
         document.getElementById('modal-dev-claim').classList.add('show');
       });
     } else if (prob.status === 'In Progress') {
-      // Allow developer to submit solution URL
       footer.innerHTML = `
         <button class="btn btn-secondary" onclick="closeModal('modal-blueprint-details')">Close</button>
         <button class="btn btn-success" id="btn-action-solve">Submit Live URL</button>
@@ -764,7 +713,6 @@ function openBlueprintModal(id) {
         document.getElementById('modal-dev-solve').classList.add('show');
       });
     } else if (prob.status === 'Solved') {
-      // Solved: inform developer of SaaS parameters
       gateContainer.classList.remove('hide');
       gateContainer.innerHTML = `
         <div class="gate-title" style="color: var(--color-success);">✅ SaaS Product Active</div>
@@ -799,7 +747,6 @@ function setupModals() {
     }
   });
 
-  // Action Button to post problem
   const openPostBtn = document.getElementById('btn-open-post-form');
   if (openPostBtn) {
     openPostBtn.addEventListener('click', () => {
@@ -809,22 +756,25 @@ function setupModals() {
 
   // Developer Claims form submit
   const claimForm = document.getElementById('form-claim-blueprint');
-  claimForm.addEventListener('submit', (e) => {
+  claimForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const devNameVal = document.getElementById('claim-dev-name').value.trim();
     const devGithubVal = document.getElementById('claim-dev-github').value.trim();
 
-    const idx = problems.findIndex(p => p.id === currentBlueprintId);
-    if (idx !== -1) {
-      problems[idx].status = 'In Progress';
-      problems[idx].developer_name = devNameVal;
-      problems[idx].developer_github = devGithubVal;
-      localStorage.setItem('btf_problems', JSON.stringify(problems));
+    const updated = await API.claimProblem(currentBlueprintId, {
+      developer_name: devNameVal,
+      developer_github: devGithubVal
+    });
 
-      updateStatistics();
-      renderClientFeed();
-      renderDeveloperFeed();
+    const idx = problems.findIndex(p => (p.id === currentBlueprintId || p._id === currentBlueprintId));
+    if (idx !== -1 && updated) {
+      problems[idx] = updated;
+      localStorage.setItem('btf_problems', JSON.stringify(problems));
     }
+
+    await updateStatistics();
+    renderClientFeed();
+    renderDeveloperFeed();
 
     closeModal('modal-dev-claim');
     claimForm.reset();
@@ -832,20 +782,23 @@ function setupModals() {
 
   // Developer Solves form submit
   const solveForm = document.getElementById('form-solve-blueprint');
-  solveForm.addEventListener('submit', (e) => {
+  solveForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const solveUrlVal = document.getElementById('solve-url').value.trim();
 
-    const idx = problems.findIndex(p => p.id === currentBlueprintId);
-    if (idx !== -1) {
-      problems[idx].status = 'Solved';
-      problems[idx].solution_url = solveUrlVal;
-      localStorage.setItem('btf_problems', JSON.stringify(problems));
+    const updated = await API.solveProblem(currentBlueprintId, {
+      solution_url: solveUrlVal
+    });
 
-      updateStatistics();
-      renderClientFeed();
-      renderDeveloperFeed();
+    const idx = problems.findIndex(p => (p.id === currentBlueprintId || p._id === currentBlueprintId));
+    if (idx !== -1 && updated) {
+      problems[idx] = updated;
+      localStorage.setItem('btf_problems', JSON.stringify(problems));
     }
+
+    await updateStatistics();
+    renderClientFeed();
+    renderDeveloperFeed();
 
     closeModal('modal-dev-solve');
     solveForm.reset();
@@ -853,68 +806,65 @@ function setupModals() {
 }
 
 function closeModal(modalId) {
-  document.getElementById(modalId).classList.remove('show');
+  const el = document.getElementById(modalId);
+  if (el) el.classList.remove('show');
 }
 
 /* ================= STRIPE SANDBOX MONETIZATION GATE ================= */
 function openCheckoutModal(prob) {
-  document.getElementById('checkout-problem-title').textContent = prob.blueprint.formal_title;
+  document.getElementById('checkout-problem-title').textContent = prob.blueprint?.formal_title || prob.raw_title;
   document.getElementById('checkout-dev-name').textContent = prob.developer_name;
-  
-  // Set default client billing email
   document.getElementById('card-email').value = prob.client_email;
 
   const modal = document.getElementById('modal-checkout');
   const alertErr = document.getElementById('checkout-error-alert');
   alertErr.classList.add('hide');
 
-  // Handle Checkout submission
   const paymentForm = document.getElementById('form-stripe-payment');
   
-  // Re-bind to ensure single execution
   paymentForm.onsubmit = (e) => {
     e.preventDefault();
 
     const cardNum = document.getElementById('card-number').value.replace(/\s/g, '');
     const cardExp = document.getElementById('card-expiry').value.trim();
     const cardCvc = document.getElementById('card-cvc').value.trim();
+    const cardEmail = document.getElementById('card-email').value.trim();
 
-    // Check validity logic (simple mock regex validation)
     if (cardNum.length < 16 || cardExp.length < 5 || cardCvc.length < 3) {
       alertErr.classList.remove('hide');
-      alertErr.textContent = "Payment validation failed. Please check inputs.";
+      alertErr.textContent = "Payment validation failed. Please enter 16 digits, MM/YY, and CVC.";
       return;
     }
 
     alertErr.classList.add('hide');
     
-    // Simulate payment submission state
     const payText = document.getElementById('btn-pay-text');
     const spinner = document.getElementById('btn-pay-spinner');
     
     payText.classList.add('hide');
     spinner.classList.remove('hide');
 
-    setTimeout(() => {
-      // Complete mock payment state updates
-      const idx = problems.findIndex(p => p.id === prob.id);
-      if (idx !== -1) {
-        problems[idx].is_unlocked = true;
+    setTimeout(async () => {
+      const probId = prob.id || prob._id;
+      const updated = await API.unlockProblem(probId, { user_email: cardEmail });
+
+      const idx = problems.findIndex(p => (p.id === probId || p._id === probId));
+      if (idx !== -1 && updated) {
+        problems[idx] = updated;
         localStorage.setItem('btf_problems', JSON.stringify(problems));
-        
-        updateStatistics();
-        renderClientFeed();
-        renderDeveloperFeed();
       }
 
-      // Close modal
+      await updateStatistics();
+      renderClientFeed();
+      renderDeveloperFeed();
+
       spinner.classList.add('hide');
       payText.classList.remove('hide');
       closeModal('modal-checkout');
       paymentForm.reset();
 
-      // Notify and reopen blueprint details unlocked
-      openBlueprintModal(prob.id);
+      // Reopen blueprint details unlocked
+      openBlueprintModal(probId);
     }, 1800);
   };
 
@@ -927,7 +877,6 @@ function setupCardFormatting() {
   const cardExpInput = document.getElementById('card-expiry');
   const cardCvcInput = document.getElementById('card-cvc');
 
-  // Formats card number: 1234 5678 1234 5678
   cardNumInput.addEventListener('input', (e) => {
     let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     let formatted = "";
@@ -940,7 +889,6 @@ function setupCardFormatting() {
     e.target.value = formatted;
   });
 
-  // Formats expiry MM / YY
   cardExpInput.addEventListener('input', (e) => {
     let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
     if (value.length > 2) {
@@ -950,7 +898,6 @@ function setupCardFormatting() {
     }
   });
 
-  // Numbers only for CVC
   cardCvcInput.addEventListener('input', (e) => {
     e.target.value = e.target.value.replace(/[^0-9]/gi, '');
   });
