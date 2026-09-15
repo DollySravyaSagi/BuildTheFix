@@ -385,37 +385,47 @@ function setupFormHandlers() {
 
 /* ================= SIMULATE AI BLUEPRINT PROCESSOR ================= */
 function simulateAILoaderSteps(title, desc, onComplete) {
-  const step1 = document.getElementById('ai-step-1');
-  const step2 = document.getElementById('ai-step-2');
-  const step3 = document.getElementById('ai-step-3');
-  const step4 = document.getElementById('ai-step-4');
+  const step1 = document.getElementById('shimmer-step-1');
+  const step2 = document.getElementById('shimmer-step-2');
+  const step3 = document.getElementById('shimmer-step-3');
+  const step4 = document.getElementById('shimmer-step-4');
+
+  const steps = [step1, step2, step3, step4].filter(Boolean);
 
   // Reset states
-  [step1, step2, step3, step4].forEach(s => {
+  steps.forEach(s => {
     s.classList.remove('active', 'completed');
   });
 
   // Step 1: Parsing
-  step1.classList.add('active');
+  if (step1) step1.classList.add('active');
 
   setTimeout(() => {
-    step1.classList.remove('active');
-    step1.classList.add('completed');
-    step2.classList.add('active');
+    if (step1) {
+      step1.classList.remove('active');
+      step1.classList.add('completed');
+    }
+    if (step2) step2.classList.add('active');
 
     setTimeout(() => {
-      step2.classList.remove('active');
-      step2.classList.add('completed');
-      step3.classList.add('active');
+      if (step2) {
+        step2.classList.remove('active');
+        step2.classList.add('completed');
+      }
+      if (step3) step3.classList.add('active');
 
       setTimeout(() => {
-        step3.classList.remove('active');
-        step3.classList.add('completed');
-        step4.classList.add('active');
+        if (step3) {
+          step3.classList.remove('active');
+          step3.classList.add('completed');
+        }
+        if (step4) step4.classList.add('active');
 
         setTimeout(() => {
-          step4.classList.remove('active');
-          step4.classList.add('completed');
+          if (step4) {
+            step4.classList.remove('active');
+            step4.classList.add('completed');
+          }
           onComplete();
         }, 800);
       }, 800);
