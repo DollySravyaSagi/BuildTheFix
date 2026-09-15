@@ -187,7 +187,7 @@ Respond ONLY with a valid JSON object (no markdown, no backticks):
   ]
 }`;
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-flash-latest',
         contents: prompt
       });
       const cleanJson = response.text.replace(/```json/gi, '').replace(/```/gi, '').trim();
