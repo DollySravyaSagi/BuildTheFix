@@ -117,138 +117,32 @@ const DEFAULT_PROBLEMS = [
   }
 ];
 
-/* ================= AI BLUEPRINT GENERATOR ================= */
-const AI_BLUEPRINTS = {
-  invoice: {
-    title: "AI-Powered Invoice Tracker & OCR Parser",
-    persona: "Freelancers, Contractors & Boutique Agencies",
-    stack: ["React.js", "Tesseract.js (OCR)", "Node.js Express", "MongoDB"],
-    features: [
-      "Mobile Receipt Snap: Upload receipt photos directly from mobile devices.",
-      "OCR Content Parsing: Instantly read total sums, tax entries, and vendor names using on-device OCR.",
-      "Categorized Expense Logs: Automatic tagging into Tax Deductible buckets.",
-      "Quick Export: Excel / PDF report compiler for tax filing seasons."
-    ],
-    roadmap: [
-      "Phase 1: Implement canvas upload flow with Tesseract.js image-to-text parsers.",
-      "Phase 2: Write regex filters to isolate currency metrics and vendor identifiers.",
-      "Phase 3: Construct local expense ledger databases.",
-      "Phase 4: Design PDF summary generators."
-    ]
-  },
-  cake: {
-    title: "SaaS Order Calendar & Recipe Tracker",
-    persona: "Small-batch Bakers & Custom Confectioners",
-    stack: ["Next.js", "Tailwind CSS", "MongoDB", "Resend (Email APIs)"],
-    features: [
-      "Visual Order Builder: Form specifying size, shapes, flavors, toppings, and photo references.",
-      "Client Dashboard: Portal for clients to track baking progress (Staged: Received, Mixing, Baked, Decorating).",
-      "Interactive Delivery Calendar: Block out date slots once daily capacity is reached.",
-      "Automated Email Alerts: Confirm receipt details to reduce misspellings."
-    ],
-    roadmap: [
-      "Phase 1: Construct the multi-step order booking funnel with reference uploads.",
-      "Phase 2: Integrate calendar capacity blocking parameters.",
-      "Phase 3: Configure Resend trigger templates for receipt verification.",
-      "Phase 4: Setup real-time order state indicators."
-    ]
-  },
-  timesheet: {
-    title: "Micro-SaaS Billable Hours & Shift Tracker",
-    persona: "Construction Foremen & Crew Subcontractors",
-    stack: ["Vite + React", "Node.js + Express", "MongoDB", "Tailwind CSS"],
-    features: [
-      "One-Tap Clock-in/Clock-out: GPS-stamped start and end times for renovation jobs.",
-      "Real-Time Coordinator Board: Dashboard for foreman to view live crew logins.",
-      "Dispute-Free PDF Invoicing: Export timesheets signed digitally at end of shift."
-    ],
-    roadmap: [
-      "Phase 1: Build mobile-friendly shift punch cards.",
-      "Phase 2: Implement contractor role-based authentication.",
-      "Phase 3: Connect PDF export engine for payroll approval."
-    ]
-  },
-  booking: {
-    title: "Automated Booking & Client Reminder System",
-    persona: "Solo Service Providers, Consultants & Clinics",
-    stack: ["React", "Express.js", "MongoDB", "Twilio / SendGrid"],
-    features: [
-      "Self-Serve Appointment Funnel: Client selects service, date, and inputs details.",
-      "Automated WhatsApp & Email Notifications: Instant confirmations and reminder intervals.",
-      "Deposit Collection Gate: Collect initial prepayments before confirming schedule.",
-      "Client History CRM: Log past visits, notes, and preferences."
-    ],
-    roadmap: [
-      "Phase 1: Build booking calendar widget with availability settings.",
-      "Phase 2: Connect notification triggers with messaging APIs.",
-      "Phase 3: Add deposit gateway support.",
-      "Phase 4: Construct customer relationship database."
-    ]
-  },
-  inventory: {
-    title: "Barcode Inventory & Reorder Intelligence Hub",
-    persona: "Independent Retailers & Warehouse Managers",
-    stack: ["Next.js", "Node.js", "MongoDB", "HTML5 QR/Barcode Scanner"],
-    features: [
-      "Mobile Barcode Scan: Scan barcodes using device camera to increment or decrement stock.",
-      "Low Stock Threshold Alerts: Automatic alerts when inventory dips below minimum levels.",
-      "Supplier Purchase Order Generator: 1-click PO email drafts for low stock items.",
-      "Stock Valuation Analytics: Real-time inventory value and turnover rate."
-    ],
-    roadmap: [
-      "Phase 1: Implement web camera barcode scanning listener.",
-      "Phase 2: Design stock quantity thresholds and automated email triggers.",
-      "Phase 3: Build vendor catalog mapping tables.",
-      "Phase 4: Construct turnover analytics dashboard."
-    ]
-  },
-  default: {
-    title: "Automated Workflow Manager & Domain Tracker",
-    persona: "Small Business Operators & Digital Teams",
-    stack: ["Vite + React", "Node.js + Express", "MongoDB", "Vanilla CSS"],
-    features: [
-      "Custom Workflow Boards: Drag-and-drop boards to map project pipelines.",
-      "Database Tables: Flexible grid entries to track invoices, items, or records.",
-      "System Activity Logs: Records changes made to documents.",
-      "Notifications Centre: Alert teammates when records change states."
-    ],
-    roadmap: [
-      "Phase 1: Assemble layout cards with drag-and-drop mechanics.",
-      "Phase 2: Write flexible column model databases.",
-      "Phase 3: Implement internal notification dispatchers."
-    ]
-  }
-};
+/* ================= AI BLUEPRINT GENERATOR & INTELLIGENCE ENGINE ================= */
 
-function generateAIBlueprint(title, description, existingProblems = []) {
+function checkDuplicates(title, description, existingProblems = []) {
   const combined = (title + ' ' + description).toLowerCase();
-
-  let matchedConfig = AI_BLUEPRINTS.default;
-  if (combined.includes('invoice') || combined.includes('receipt') || combined.includes('expense') || combined.includes('bill')) {
-    matchedConfig = AI_BLUEPRINTS.invoice;
-  } else if (combined.includes('cake') || combined.includes('bakery') || combined.includes('food') || combined.includes('order')) {
-    matchedConfig = AI_BLUEPRINTS.cake;
-  } else if (combined.includes('timesheet') || combined.includes('contractor') || combined.includes('hours') || combined.includes('clock')) {
-    matchedConfig = AI_BLUEPRINTS.timesheet;
-  } else if (combined.includes('book') || combined.includes('appointment') || combined.includes('reminder') || combined.includes('patient')) {
-    matchedConfig = AI_BLUEPRINTS.booking;
-  } else if (combined.includes('inventory') || combined.includes('stock') || combined.includes('barcode') || combined.includes('warehouse')) {
-    matchedConfig = AI_BLUEPRINTS.inventory;
-  }
-
-  // Duplicate Check against existing database
   let isDuplicate = false;
   let similarId = null;
   let similarityReason = "";
 
   for (const item of existingProblems) {
     const itemText = (item.raw_title + ' ' + item.raw_description).toLowerCase();
-    const commonKeywords = ['invoice', 'receipt', 'bakery', 'cake', 'timesheet', 'contractor', 'appointment', 'inventory', 'stock'];
-    for (const kw of commonKeywords) {
-      if (combined.includes(kw) && itemText.includes(kw)) {
+    const commonTopics = [
+      { key: 'craft', label: 'Art, crafts, or custom decor products' },
+      { key: 'bakery', label: 'Bakery or cake orders' },
+      { key: 'invoice', label: 'Invoice and receipt processing' },
+      { key: 'timesheet', label: 'Contractor hours and timesheets' },
+      { key: 'appointment', label: 'Appointment and booking reminders' },
+      { key: 'inventory', label: 'Inventory stock management' },
+      { key: 'real estate', label: 'Property and tenant management' },
+      { key: 'tutoring', label: 'Student and tutoring sessions' }
+    ];
+
+    for (const topic of commonTopics) {
+      if (combined.includes(topic.key) && itemText.includes(topic.key)) {
         isDuplicate = true;
         similarId = item.id || item._id.toString();
-        similarityReason = `High concept overlap detected with problem: "${item.raw_title}" (Keywords: ${kw}).`;
+        similarityReason = `High concept overlap detected with existing blueprint: "${item.raw_title}" (${topic.label}).`;
         break;
       }
     }
@@ -256,16 +150,199 @@ function generateAIBlueprint(title, description, existingProblems = []) {
   }
 
   return {
-    formal_title: matchedConfig.title,
-    target_persona: matchedConfig.persona,
-    tech_stack: matchedConfig.stack,
-    core_features: matchedConfig.features,
-    roadmap: matchedConfig.roadmap,
-    duplicate_check: {
-      is_duplicate: isDuplicate,
-      similar_problem_id: similarId,
-      similarity_reason: similarityReason
+    is_duplicate: isDuplicate,
+    similar_problem_id: similarId,
+    similarity_reason: similarityReason
+  };
+}
+
+async function generateAIBlueprint(title, description, existingProblems = []) {
+  // Option 1: Live Google Gemini API (if GEMINI_API_KEY is configured in .env)
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const { GoogleGenAI } = require('@google/genai');
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const prompt = `You are an elite SaaS Solution Architect and CTO for the BuildTheFix marketplace.
+A user submitted the following operational bottleneck:
+Title: "${title}"
+Description: "${description}"
+
+Generate a high-value technical MVP blueprint to solve their specific bottleneck.
+Respond ONLY with a valid JSON object (no markdown, no backticks):
+{
+  "formal_title": "Clear, attractive SaaS/App name tailored specifically to their problem",
+  "target_persona": "Specific target customer persona",
+  "tech_stack": ["Frontend tech", "Backend tech", "Database", "Key API/Tool"],
+  "core_features": [
+    "Feature Title: Detailed feature description",
+    "Feature Title: Detailed feature description",
+    "Feature Title: Detailed feature description",
+    "Feature Title: Detailed feature description"
+  ],
+  "roadmap": [
+    "Phase 1: Step description",
+    "Phase 2: Step description",
+    "Phase 3: Step description",
+    "Phase 4: Step description"
+  ]
+}`;
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt
+      });
+      const cleanJson = response.text.replace(/```json/gi, '').replace(/```/gi, '').trim();
+      const parsed = JSON.parse(cleanJson);
+      
+      const dup = checkDuplicates(title, description, existingProblems);
+      return {
+        formal_title: parsed.formal_title,
+        target_persona: parsed.target_persona,
+        tech_stack: parsed.tech_stack || ["Next.js", "Node.js", "MongoDB", "Tailwind CSS"],
+        core_features: parsed.core_features || [],
+        roadmap: parsed.roadmap || [],
+        duplicate_check: dup
+      };
+    } catch (err) {
+      console.warn('Gemini API call notice, using smart local synthesizer:', err.message);
     }
+  }
+
+  // Option 2: Smart Local Dynamic Domain Synthesizer
+  return generateSmartDynamicBlueprint(title, description, existingProblems);
+}
+
+function generateSmartDynamicBlueprint(title, description, existingProblems = []) {
+  const combined = (title + ' ' + description).toLowerCase();
+  const dupCheck = checkDuplicates(title, description, existingProblems);
+
+  // 1. Art, Craft, Custom Gifts, Instagram Shop, Decor
+  if (combined.match(/(art|craft|gift|decor|instagram|handmade|jewelry|resin|painting|candle|customized product|store|shop|selling)/)) {
+    return {
+      formal_title: "ArtisanCraft: E-Commerce Store & Custom Order Intake Portal",
+      target_persona: "Instagram Artisans, Craft Creators & Custom Gift Designers",
+      tech_stack: ["Next.js", "Tailwind CSS", "MongoDB Atlas", "Stripe Checkout", "Cloudinary (Product Galleries)"],
+      core_features: [
+        "Visual Product Showcase: Elegant mobile-first catalog displaying handcrafted items with pricing tiers.",
+        "Customization Request Builder: Interactive form for customers to input custom text, dimensions, and reference image uploads.",
+        "Direct-to-WhatsApp / Email Order Notification: Instant alerts to creator with complete buyer specifications upon purchase.",
+        "Order Fulfillment Kanban: Simple dashboard to track orders through (Received, In-Crafting, Packaged, Shipped)."
+      ],
+      roadmap: [
+        "Phase 1: Build responsive product showcase gallery with photo upload support.",
+        "Phase 2: Implement custom request builder form with image previews.",
+        "Phase 3: Integrate Stripe Checkout for direct payment processing.",
+        "Phase 4: Connect automated buyer receipt dispatch via WhatsApp/Email."
+      ],
+      duplicate_check: dupCheck
+    };
+  }
+
+  // 2. Invoices & Expenses
+  if (combined.match(/(invoice|receipt|expense|tax|billing|ocr|bookkeep)/)) {
+    return {
+      formal_title: "AI-Powered Invoice Tracker & OCR Expense Parser",
+      target_persona: "Freelancers, Contractors & Boutique Agencies",
+      tech_stack: ["React.js", "Tesseract.js (OCR)", "Node.js Express", "MongoDB"],
+      core_features: [
+        "Mobile Receipt Snap: Upload receipt photos directly from mobile devices.",
+        "OCR Content Parsing: Instantly read total sums, tax entries, and vendor names using on-device OCR.",
+        "Categorized Expense Logs: Automatic tagging into Tax Deductible buckets.",
+        "Quick Export: Excel / PDF report compiler for tax filing seasons."
+      ],
+      roadmap: [
+        "Phase 1: Implement canvas upload flow with Tesseract.js image-to-text parsers.",
+        "Phase 2: Write regex filters to isolate currency metrics and vendor identifiers.",
+        "Phase 3: Construct local expense ledger databases.",
+        "Phase 4: Design PDF summary generators."
+      ],
+      duplicate_check: dupCheck
+    };
+  }
+
+  // 3. Bakery & Confectionery (Explicit bakery/cakes only)
+  if (combined.match(/(cake|baker|bakery|pastry|cookie|cupcake|confection)/)) {
+    return {
+      formal_title: "SaaS Order Calendar & Custom Cake Recipe Tracker",
+      target_persona: "Small-batch Bakers & Custom Cake Designers",
+      tech_stack: ["Next.js", "Tailwind CSS", "MongoDB", "Resend (Email APIs)"],
+      core_features: [
+        "Visual Order Builder: Form specifying size, shapes, flavors, toppings, and photo references.",
+        "Client Dashboard: Portal for clients to track baking progress (Received, Mixing, Baked, Decorating).",
+        "Interactive Delivery Calendar: Block out date slots once daily capacity is reached.",
+        "Automated Email Alerts: Confirm receipt details to reduce misspellings."
+      ],
+      roadmap: [
+        "Phase 1: Construct the multi-step order booking funnel with reference uploads.",
+        "Phase 2: Integrate calendar capacity blocking parameters.",
+        "Phase 3: Configure Resend trigger templates for receipt verification.",
+        "Phase 4: Setup real-time order state indicators."
+      ],
+      duplicate_check: dupCheck
+    };
+  }
+
+  // 4. Contractor Timesheets & Shift Clock
+  if (combined.match(/(timesheet|contractor|clock|shift|subcontractor|hour|payroll|construction)/)) {
+    return {
+      formal_title: "Micro-SaaS Billable Hours & Shift Tracker",
+      target_persona: "Construction Foremen, Site Managers & Subcontractors",
+      tech_stack: ["Vite + React", "Node.js + Express", "MongoDB", "Tailwind CSS"],
+      core_features: [
+        "One-Tap Clock-in/Clock-out: GPS-stamped start and end times for shift jobs.",
+        "Real-Time Coordinator Board: Dashboard for foreman to view live crew logins.",
+        "Dispute-Free PDF Invoicing: Export timesheets signed digitally at end of shift."
+      ],
+      roadmap: [
+        "Phase 1: Build mobile-friendly shift punch cards.",
+        "Phase 2: Implement contractor role-based authentication.",
+        "Phase 3: Connect PDF export engine for payroll approval."
+      ],
+      duplicate_check: dupCheck
+    };
+  }
+
+  // 5. Booking & Appointments
+  if (combined.match(/(book|appointment|calendar|reminder|patient|clinic|salon|consultation)/)) {
+    return {
+      formal_title: "Automated Booking & Client Reminder System",
+      target_persona: "Solo Service Providers, Consultants & Clinics",
+      tech_stack: ["React", "Express.js", "MongoDB", "Twilio / SendGrid"],
+      core_features: [
+        "Self-Serve Appointment Funnel: Client selects service, date, and inputs details.",
+        "Automated WhatsApp & Email Notifications: Instant confirmations and reminder intervals.",
+        "Deposit Collection Gate: Collect initial prepayments before confirming schedule.",
+        "Client History CRM: Log past visits, notes, and preferences."
+      ],
+      roadmap: [
+        "Phase 1: Build booking calendar widget with availability settings.",
+        "Phase 2: Connect notification triggers with messaging APIs.",
+        "Phase 3: Add deposit gateway support.",
+        "Phase 4: Construct customer relationship database."
+      ],
+      duplicate_check: dupCheck
+    };
+  }
+
+  // 6. Generic / Dynamic Synthesis from User Title
+  const cleanTitle = title.trim();
+  const titleWords = cleanTitle.split(' ').slice(0, 4).join(' ');
+  return {
+    formal_title: `${titleWords || 'Custom Workflow'} Management & Automation Hub`,
+    target_persona: "Small Business Operators, Creators & Independent Teams",
+    tech_stack: ["Next.js", "Node.js + Express", "MongoDB Atlas", "Tailwind CSS"],
+    core_features: [
+      `Automated Intake Portal: Direct client submission interface for "${cleanTitle}".`,
+      "Real-Time Activity Dashboard: Track tasks, requests, and pipeline stages in one place.",
+      "Instant Notification Alerts: Automatically ping stakeholders when records or status change.",
+      "Export & Reporting Suite: 1-click summary reports for operations and accounting."
+    ],
+    roadmap: [
+      "Phase 1: Design responsive data submission interface.",
+      "Phase 2: Build MongoDB collections and REST API endpoints.",
+      "Phase 3: Implement real-time status and notification triggers.",
+      "Phase 4: Add export tools and analytics overview."
+    ],
+    duplicate_check: dupCheck
   };
 }
 
@@ -358,7 +435,7 @@ app.post('/api/problems', async (req, res) => {
 
     // Retrieve recent problems to check for duplicates
     const recentProblems = await Problem.find({}).limit(50);
-    const blueprint = generateAIBlueprint(raw_title, raw_description, recentProblems);
+    const blueprint = await generateAIBlueprint(raw_title, raw_description, recentProblems);
 
     const newProblem = new Problem({
       client_name,
