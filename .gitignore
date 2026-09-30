@@ -1,8 +1,17 @@
-# Dependencies
+# Dependencies (Node.js - legacy)
 node_modules/
 package-lock.json
 
-# Environment variables
+# Java / Maven Build Artifacts
+target/
+*.class
+*.jar
+*.war
+
+# Maven Wrapper (downloaded locally)
+.mvn/
+
+# Environment variables (secrets)
 .env
 .env.local
 
@@ -18,3 +27,7 @@ Thumbs.db
 *.njsproj
 *.sln
 *.swp
+*.iml
+
+# Logs
+*.log
