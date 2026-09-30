@@ -1,0 +1,7 @@
+target/
+.git/
+.mvn/
+node_modules/
+.env
+.env.local
+*.log
